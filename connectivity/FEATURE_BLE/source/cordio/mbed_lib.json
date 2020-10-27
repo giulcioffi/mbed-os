@@ -4,7 +4,7 @@
     "config": {
         "max-connections": {
             "help": "Maximum number of connections",
-            "value": 3,
+            "value": 8,
             "macro_name": "DM_CONN_MAX"
         },
         "max-syncs": {
