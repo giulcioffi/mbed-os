@@ -3147,6 +3147,12 @@
             "4343W",
             "CYW43XXX"
         ],
+        "extra_labels_add": [
+            "CORDIO"
+        ],
+        "features": [
+            "BLE"
+        ],
         "device_has_add": [
             "USBDEVICE",
             "EMAC",
