@@ -71,7 +71,7 @@ using namespace ble;
 
 #else
 
-#define CORDIO_LL_MEMORY_FOOTPRINT  12500UL
+#define CORDIO_LL_MEMORY_FOOTPRINT  13000UL
 
 #endif
 
