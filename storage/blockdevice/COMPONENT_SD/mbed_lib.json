@@ -133,6 +133,12 @@
             "SPI_MISO": "PC_2",
             "SPI_CLK":  "PB_10",
             "SPI_CS":   "PE_2"
-        }
+        },
+        "UNISENSE": {
+          "SPI_MOSI": "P0_13",
+          "SPI_MISO": "P0_14",
+          "SPI_CLK":  "P0_12",
+          "SPI_CS":   "P0_16"
+      }
     }
 }
