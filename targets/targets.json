@@ -2440,7 +2440,7 @@
             "MBED_MPU_CUSTOM"
         ]
     },
-    "NUCLEO_G071RB": {
+    "MCU_STM32G0": {
         "inherits": [
             "MCU_STM32"
         ],
