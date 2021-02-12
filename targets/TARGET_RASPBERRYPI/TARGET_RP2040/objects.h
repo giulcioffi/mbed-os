@@ -17,10 +17,13 @@
 #ifndef MBED_OBJECTS_H
 #define MBED_OBJECTS_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+
 #ifdef __cplusplus
 #include <stdint.h>
 #include <cstddef>
-namespace rpi {
 extern "C" {
 #endif
 #include "pico.h"
@@ -40,8 +43,9 @@ extern "C" {
 #include "hardware/regs/addressmap.h"
 #ifdef __cplusplus
 }
-}
 #endif
+
+#pragma GCC diagnostic pop
 
 #include "cmsis.h"
 
@@ -82,23 +86,17 @@ struct analogin_s {
     uint8_t channel;
 };
 
-#ifdef __cplusplus
-#define NAMESPACE_RPI rpi::
-#else
-#define NAMESPACE_RPI
-#endif
-
 struct serial_s {
-    NAMESPACE_RPI uart_inst_t * const uart;
+    uart_inst_t * const uart;
     int index;
 };
 
 struct i2c_s {
-    NAMESPACE_RPI i2c_inst_t * const *i2c;
+    i2c_inst_t * const *i2c;
 };
 
 struct spi_s {
-    NAMESPACE_RPI spi_inst_t * const *spi;
+    spi_inst_t * const *spi;
 };
 
 struct flash_s {

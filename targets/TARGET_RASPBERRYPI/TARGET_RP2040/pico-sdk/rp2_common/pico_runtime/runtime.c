@@ -141,8 +141,7 @@ void runtime_init(void) {
 
     spin_locks_reset();
     irq_init_priorities();
-    // This calls malloc() which is forbidden in mbed before switching to thread context
-    // alarm_pool_init_default();
+    alarm_pool_init_default();
 
     // Start and end points of the constructor list,
     // defined by the linker script.

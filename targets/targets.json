@@ -7885,6 +7885,7 @@
         "macros_add": [
             "PICO_NO_BINARY_INFO=1",
             "MBED_MPU_CUSTOM",
+            "PICO_TIME_DEFAULT_ALARM_POOL_DISABLED",
             "PICO_ON_DEVICE=1"
         ]
     },
