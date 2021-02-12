@@ -28,19 +28,19 @@ __vectors:
 .word __StackTop
 .word _reset_handler
 .word isr_nmi
-.word isr_hardfault
+.word HardFault_Handler
+.word MemManage_Handler
+.word BusFault_Handler
+.word UsageFault_Handler
 .word isr_invalid // Reserved, should never fire
 .word isr_invalid // Reserved, should never fire
 .word isr_invalid // Reserved, should never fire
 .word isr_invalid // Reserved, should never fire
+.word SVC_Handler
 .word isr_invalid // Reserved, should never fire
 .word isr_invalid // Reserved, should never fire
-.word isr_invalid // Reserved, should never fire
-.word isr_svcall
-.word isr_invalid // Reserved, should never fire
-.word isr_invalid // Reserved, should never fire
-.word isr_pendsv
-.word isr_systick
+.word PendSV_Handler
+.word SysTick_Handler
 .word isr_irq0
 .word isr_irq1
 .word isr_irq2
@@ -241,9 +241,9 @@ bss_fill_test:
 platform_entry: // symbol for stack traces
     // Use 32-bit jumps, in case these symbols are moved out of branch range
     // (e.g. if main is in SRAM and crt0 in flash)
-    ldr r1, =runtime_init
-    blx r1
-    ldr r1, =main
+    //ldr r1, =runtime_init
+    //blx r1
+    ldr r1, =_start
     blx r1
     ldr r1, =exit
     blx r1

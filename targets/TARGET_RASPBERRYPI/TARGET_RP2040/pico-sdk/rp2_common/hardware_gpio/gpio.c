@@ -151,7 +151,7 @@ void gpio_set_input_enabled(uint gpio, bool enabled) {
         hw_clear_bits(&padsbank0_hw->io[gpio], PADS_BANK0_GPIO0_IE_BITS);
 }
 
-void gpio_init(uint gpio) {
+void _gpio_init(uint gpio) {
     sio_hw->gpio_oe_clr = 1ul << gpio;
     sio_hw->gpio_clr = 1ul << gpio;
     gpio_set_function(gpio, GPIO_FUNC_SIO);
@@ -160,7 +160,7 @@ void gpio_init(uint gpio) {
 void gpio_init_mask(uint gpio_mask) {
     for(uint i=0;i<32;i++) {
         if (gpio_mask & 1) {
-            gpio_init(i);
+            _gpio_init(i);
         }
         gpio_mask >>= 1;
     }

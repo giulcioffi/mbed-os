@@ -20,7 +20,8 @@
 
 #include "pico/mutex.h"
 #include "pico/time.h"
-#include "pico/printf.h"
+// Use mbed printf
+//#include "pico/printf.h"
 
 #if PICO_ENTER_USB_BOOT_ON_EXIT
 #include "pico/bootrom.h"
@@ -140,7 +141,8 @@ void runtime_init(void) {
 
     spin_locks_reset();
     irq_init_priorities();
-    alarm_pool_init_default();
+    // This calls malloc() which is forbidden in mbed before switching to thread context
+    // alarm_pool_init_default();
 
     // Start and end points of the constructor list,
     // defined by the linker script.
@@ -156,7 +158,7 @@ void runtime_init(void) {
 
 }
 
-void _exit(int status) {
+void __exit(int status) {
 #if PICO_ENTER_USB_BOOT_ON_EXIT
     reset_usb_boot(0,0);
 #else
@@ -166,7 +168,7 @@ void _exit(int status) {
 #endif
 }
 
-void *_sbrk(int incr) {
+void *__sbrk(int incr) {
     extern char end; /* Set by linker.  */
     static char *heap_end;
     char *prev_heap_end;
@@ -195,18 +197,18 @@ void *_sbrk(int incr) {
 
 // exit is not useful... no desire to pull in __call_exitprocs
 void exit(int status) {
-    _exit(status);
+    __exit(status);
 }
 
 // incorrect warning from GCC 6
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 void __assert_func(const char *file, int line, const char *func, const char *failedexpr) {
-    weak_raw_printf("assertion \"%s\" failed: file \"%s\", line %d%s%s\n",
+    printf("assertion \"%s\" failed: file \"%s\", line %d%s%s\n",
            failedexpr, file, line, func ? ", function: " : "",
            func ? func : "");
 
-    _exit(1);
+    exit(1);
 }
 
 #pragma GCC diagnostic pop
@@ -232,14 +234,14 @@ void __attribute__((noreturn)) __printflike(1, 0) panic(const char *fmt, ...) {
 #if PICO_PRINTF_ALWAYS_INCLUDED
         vprintf(fmt, args);
 #else
-        weak_raw_vprintf(fmt, args);
+        vprintf(fmt, args);
 #endif
         va_end(args);
         puts("\n");
 #endif
     }
 
-    _exit(1);
+    exit(1);
 }
 
 void hard_assertion_failure(void) {

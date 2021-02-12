@@ -16,6 +16,4 @@
 // PICO_CONFIG_HEADER_FILES and then PICO_SDK_<PLATFORM>_CONFIG_INCLUDE_FILES
 // entries are dumped in order at build time into this generated header
 
-#include "pico/config_autogen.h"
-
 #endif
