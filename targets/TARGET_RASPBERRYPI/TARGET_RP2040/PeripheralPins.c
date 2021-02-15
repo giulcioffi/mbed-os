@@ -121,48 +121,48 @@ const PinMap PinMap_PWM_OUT[] = {
 
 /************SPI***************/
 const PinMap PinMap_SPI_MISO[] = {
-    {p0,  SPI_0, (uint32_t) spi0},
-    {p4,  SPI_0, (uint32_t) spi0},
-    {p8,  SPI_1, (uint32_t) spi1},
-    {p12, SPI_1, (uint32_t) spi1},
-    {p16, SPI_0, (uint32_t) spi0},
-    {p20, SPI_0, (uint32_t) spi0},
-    {p24, SPI_1, (uint32_t) spi1},
-    {p28, SPI_1, (uint32_t) spi1},
+    {p0,  SPI_0, 0},
+    {p4,  SPI_0, 0},
+    {p8,  SPI_1, 0},
+    {p12, SPI_1, 0},
+    {p16, SPI_0, 0},
+    {p20, SPI_0, 0},
+    {p24, SPI_1, 0},
+    {p28, SPI_1, 0},
     {NC, NC, 0}
 };
 
 const PinMap PinMap_SPI_SSEL[] = {
-    {p1,  SPI_0, (uint32_t) spi0},
-    {p5,  SPI_0, (uint32_t) spi0},
-    {p9,  SPI_1, (uint32_t) spi1},
-    {p13, SPI_1, (uint32_t) spi1},
-    {p17, SPI_0, (uint32_t) spi0},
-    {p21, SPI_0, (uint32_t) spi0},
-    {p25, SPI_1, (uint32_t) spi1},
-    {p29, SPI_1, (uint32_t) spi1},
+    {p1,  SPI_0, 0},
+    {p5,  SPI_0, 0},
+    {p9,  SPI_1, 0},
+    {p13, SPI_1, 0},
+    {p17, SPI_0, 0},
+    {p21, SPI_0, 0},
+    {p25, SPI_1, 0},
+    {p29, SPI_1, 0},
     {NC, NC, 0}
 };
 
 const PinMap PinMap_SPI_SCLK[] = {
-    {p2,  SPI_0, (uint32_t) spi0},
-    {p6,  SPI_0, (uint32_t) spi0},
-    {p10, SPI_1, (uint32_t) spi1},
-    {p14, SPI_1, (uint32_t) spi1},
-    {p18, SPI_0, (uint32_t) spi0},
-    {p22, SPI_0, (uint32_t) spi0},
-    {p26, SPI_1, (uint32_t) spi1},
+    {p2,  SPI_0, 0},
+    {p6,  SPI_0, 0},
+    {p10, SPI_1, 0},
+    {p14, SPI_1, 0},
+    {p18, SPI_0, 0},
+    {p22, SPI_0, 0},
+    {p26, SPI_1, 0},
     {NC, NC, 0}
 };
 
 const PinMap PinMap_SPI_MOSI[] = {
-    {p3,  SPI_0, (uint32_t) spi0},
-    {p7,  SPI_0, (uint32_t) spi0},
-    {p11, SPI_1, (uint32_t) spi1},
-    {p15, SPI_1, (uint32_t) spi1},
-    {p19, SPI_0, (uint32_t) spi0},
-    {p23, SPI_0, (uint32_t) spi0},
-    {p27, SPI_1, (uint32_t) spi1},
+    {p3,  SPI_0, 0},
+    {p7,  SPI_0, 0},
+    {p11, SPI_1, 0},
+    {p15, SPI_1, 0},
+    {p19, SPI_0, 0},
+    {p23, SPI_0, 0},
+    {p27, SPI_1, 0},
     {NC, NC, 0}
 };
 
