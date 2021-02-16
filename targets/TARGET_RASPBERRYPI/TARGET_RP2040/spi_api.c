@@ -50,23 +50,21 @@ void spi_format(spi_t *obj, int bits, int mode, int slave)
     MBED_ASSERT((mode >= 0) && (mode <= 3));
 
     /* Determine parameters for CPOL, CPHA */
-    spi_cpol_t cpol;
-    spi_cpha_t cpha;
-    if        (mode == 0) {
-        cpol = SPI_CPOL_0;
-        cpha = SPI_CPHA_0;
-    } else if (mode == 1) {
-        cpol = SPI_CPOL_0;
-        cpha = SPI_CPHA_1;
-    } else if (mode == 2) {
-        cpol = SPI_CPOL_1;
-        cpha = SPI_CPHA_0;
-    } else {
-        cpol = SPI_CPOL_1;
-        cpha = SPI_CPHA_1;
-    }
+    typedef struct
+    {
+        spi_cpol_t cpol;
+        spi_cpha_t cpha;
+    } spi_mode_t;
+    spi_mode_t const SPI_MODE[4] =
+    {
+        {SPI_CPOL_0, SPI_CPHA_0}, /* MODE 0 */
+        {SPI_CPOL_0, SPI_CPHA_1}, /* MODE 1 */
+        {SPI_CPOL_1, SPI_CPHA_0}, /* MODE 2 */
+        {SPI_CPOL_1, SPI_CPHA_1}  /* MODE 3 */
+    };
+
     /* Configure the SPI. */
-    spi_set_format(obj->dev, bits, cpol, cpha, SPI_MSB_FIRST);
+    spi_set_format(obj->dev, bits, SPI_MODE[mode].cpol, SPI_MODE[mode].cpha, SPI_MSB_FIRST);
     /* Set's the SPI up as slave if the value of slave is different from 0, e.g. a value of 1 or -1 set's this SPI up as a slave. */
     spi_set_slave(obj->dev, slave != 0);
 }
