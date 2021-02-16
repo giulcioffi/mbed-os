@@ -80,7 +80,7 @@ int spi_master_write(spi_t *obj, int value)
 {
     uint8_t rx;
     uint8_t const tx = (uint8_t)value;
-    spi_master_block_write(obj, (const char *)&tx, sizeof(tx), (char *)&rx, sizeof(rx), ' ');
+    spi_write_read_blocking(obj->dev, &tx, &rx, sizeof(rx));
     return rx;
 }
 
