@@ -20,8 +20,6 @@
 #include "cmsis.h"
 #include "PinNames.h"
 
-#include "addressmap.h"
-
 typedef enum {
     UART_0 = 0,
     UART_1,
@@ -32,8 +30,8 @@ typedef enum {
 } ADCName;
 
 typedef enum {
-    SPI_0 = SPI0_BASE,
-    SPI_1 = SPI1_BASE
+    SPI_0 = 0,
+    SPI_1
 } SPIName;
 
 typedef enum {

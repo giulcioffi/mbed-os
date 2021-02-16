@@ -5,8 +5,8 @@
 #include "mbed_assert.h"
 #include "mbed_critical.h"
 #include "spi_api.h"
-#include "pinmap.h"
 #include "PeripheralPins.h"
+#include "PeripheralNames.h"
 
 /******************************************************************************
  * CONSTANT
@@ -20,19 +20,19 @@ static unsigned int const SPI_MASTER_DEFAULT_BITRATE = 1000 * 1000; /* 1 MHz */
 
 void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk, PinName ssel)
 {
-    /* Obtain the pointer to the SPI hardware instance. */
-    spi_inst_t * dev_mosi = (spi_inst_t *)pinmap_peripheral(mosi, PinMap_SPI_MOSI);
-    spi_inst_t * dev_miso = (spi_inst_t *)pinmap_peripheral(miso, PinMap_SPI_MISO);
-    spi_inst_t * dev_sclk = (spi_inst_t *)pinmap_peripheral(sclk, PinMap_SPI_SCLK);
-    spi_inst_t * dev_ssel = (spi_inst_t *)pinmap_peripheral(ssel, PinMap_SPI_SSEL);
+    /* Check if all pins do in fact belong to the same SPI module. */
+    SPIName spi_mosi = (SPIName)pinmap_peripheral(mosi, PinMap_SPI_MOSI);
+    SPIName spi_miso = (SPIName)pinmap_peripheral(miso, PinMap_SPI_MISO);
+    SPIName spi_sclk = (SPIName)pinmap_peripheral(sclk, PinMap_SPI_SCLK);
+    SPIName spi_ssel = (SPIName)pinmap_peripheral(ssel, PinMap_SPI_SSEL);
 
-    /* Check if in fact all pins point to the same SPI hardware instance. */
-    MBED_ASSERT(dev_mosi == dev_miso);
-    MBED_ASSERT(dev_miso == dev_sclk);
-    MBED_ASSERT(dev_sclk == dev_ssel);
+    MBED_ASSERT(spi_mosi == spi_miso);
+    MBED_ASSERT(spi_miso == spi_sclk);
+    MBED_ASSERT(spi_sclk == spi_ssel);
+    MBED_ASSERT(spi_ssel != (SPIName)NC);
 
-    /* Now that we know that all pins use the same SPI module we can save it. */
-    obj->dev = dev_mosi;
+    /* Obtain pointer to the SPI module. */
+    obj->dev = (spi_inst_t *)pinmap_function(mosi, PinMap_SPI_MOSI);
 
     /* Configure GPIOs for SPI usage. */
     gpio_set_function(mosi, GPIO_FUNC_SPI);
