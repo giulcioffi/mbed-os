@@ -139,7 +139,7 @@ int serial_getc(serial_t *obj)
 
 void serial_putc(serial_t *obj, int c)
 {
-    uart_putc(obj->dev, c);
+    uart_putc_raw(obj->dev, c);
 }
 
 int serial_readable(serial_t *obj)
