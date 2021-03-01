@@ -52,7 +52,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     if (dev_tx == UART_0) {
         obj->dev = uart0;
     } else {
-        obj->dev = uart1;        
+        obj->dev = uart1;
     }
 
     uart_init(obj->dev, MBED_CONF_PLATFORM_DEFAULT_SERIAL_BAUD_RATE);
@@ -60,7 +60,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     gpio_set_function(rx, GPIO_FUNC_UART);
 
     //uart_set_translate_crlf(obj->dev, false);
-    //uart_set_fifo_enabled(dev, false);
+    uart_set_fifo_enabled(obj->dev, false);
 
     if (tx == STDIO_UART_TX) {
         memmove(&stdio_uart, obj, sizeof(serial_t));
@@ -98,19 +98,36 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
     uart_set_format(obj->dev, data_bits, stop_bits, hal_parity);
 }
 
+static volatile uart_irq_handler irq_handler;
+static volatile uint32_t serial_irq_ids[2] = {0};
+
+static inline void uart0_irq(void)
+{
+    irq_handler(serial_irq_ids[0], RxIrq);
+}
+
+static inline void uart1_irq(void)
+{
+    irq_handler(serial_irq_ids[1], RxIrq);
+}
+
 void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
 {
-    obj->handler_arg = id;
-    // The struct uses a different type because objects.h cannot include serial_api.h without creating a cycle
-    obj->handler = (void *)handler;
+    int UART_IRQ = obj->dev == uart0 ? UART0_IRQ : UART1_IRQ;
+    if (obj->dev == uart0) {
+        serial_irq_ids[0] = id;
+    } else {
+        serial_irq_ids[1] = id;
+    }
+    irq_handler = handler;
 }
 
 void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
 {
     int UART_IRQ = obj->dev == uart0 ? UART0_IRQ : UART1_IRQ;
 
-    irq_set_exclusive_handler(UART_IRQ, obj->handler);
-    irq_set_enabled(UART_IRQ, true);
+    irq_set_exclusive_handler(UART_IRQ, obj->dev == uart0 ? uart0_irq : uart1_irq);
+    irq_set_enabled(UART_IRQ, enable);
 
     uart_set_irq_enables(obj->dev, irq == RxIrq, irq == TxIrq);
 }

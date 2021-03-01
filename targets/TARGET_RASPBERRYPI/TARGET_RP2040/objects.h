@@ -90,8 +90,6 @@ struct serial_s {
     PinName pin_rts;
     PinName pin_cts;
     uint32_t baud;
-    void *handler;
-    uint32_t handler_arg;
 };
 
 struct i2c_s {
