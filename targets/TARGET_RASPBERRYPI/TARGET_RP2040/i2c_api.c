@@ -6,6 +6,23 @@
 #include "i2c_api.h"
 #include "pinmap.h"
 #include "PeripheralPins.h"
+#include "objects.h"
+#include "stdio.h"
+
+/******************************************************************************
+ * DEFINE
+ ******************************************************************************/
+
+#if 1
+#define DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#else
+#define DEBUG_PRINTF(...)
+#endif
+
+#define NoData         0 // the slave has not been addressed
+#define ReadAddressed  1 // the master has requested a read from this slave (slave = transmitter)
+#define WriteGeneral   2 // the master is writing to all slave
+#define WriteAddressed 3 // the master is writing to this slave (slave = receiver)
 
 /******************************************************************************
  * CONST
@@ -37,10 +54,10 @@ void i2c_init(i2c_t *obj, PinName sda, PinName scl)
     obj->dev = (i2c_inst_t *)pinmap_function(sda, PinMap_I2C_SDA);
     //obj->baudrate = DEFAULT_I2C_BAUDRATE;
     //Call this function because if we are configuring a slave, we don't have to set the frequency
-    i2c_frequency(obj->dev, DEFAULT_I2C_BAUDRATE);
+    //i2c_frequency(obj->dev, DEFAULT_I2C_BAUDRATE);
 
     /* Initialize the I2C module. */
-    _i2c_init(obj->dev, obj->baudrate);
+    _i2c_init(obj->dev, DEFAULT_I2C_BAUDRATE);
 
     /* Configure GPIO for I2C as alternate function. */
     gpio_set_function(sda, GPIO_FUNC_I2C);
@@ -53,6 +70,8 @@ void i2c_init(i2c_t *obj, PinName sda, PinName scl)
 
 void i2c_frequency(i2c_t *obj, int hz)
 {
+    DEBUG_PRINTF("obj->is_slave: %d\r\n", obj->is_slave);
+
 #if DEVICE_I2CSLAVE
     /* Slaves automatically get frequency from master */
     if(obj->is_slave) {
@@ -137,38 +156,45 @@ int i2c_stop(i2c_t *obj)
  */
 void i2c_slave_mode(i2c_t *obj, int enable_slave)
 {
-    /* Reconfigure this instance as an I2C slave */
+    DEBUG_PRINTF("i2c_slave_mode: %p, %d\r\n", obj, enable_slave);
 
-    /* Not configured yet, so this instance is and was a slave */
-    if(obj->dev == NULL) {
-    		obj->was_slave = enable_slave;
-    } else {
-        obj->was_slave = obj->is_slave;
-    }
     obj->is_slave = enable_slave;
 }
 
 /** Check to see if the I2C slave has been addressed.
  *  @param obj The I2C object
- *  @return The status - 1 - read addresses, 2 - write to all slaves,
+ *  @return The status - 1 - read addressed, 2 - write to all slaves,
  *         3 write addressed, 0 - the slave has not been addressed
  */
 int i2c_slave_receive(i2c_t *obj)
 {
+    //DEBUG_PRINTF("i2c_slave_receive\r\n");
+    int retValue = NoData;
 
+    int command = (obj->dev->hw->data_cmd & 0x00000100) >> 8;
+
+    if (command == I2C_IC_DATA_CMD_CMD_VALUE_WRITE) {
+        retValue = WriteAddressed;
+    }
+
+    if (command == I2C_IC_DATA_CMD_CMD_VALUE_READ) {
+        retValue = ReadAddressed;
+    }
+
+    return (retValue);
 }
 
 /** Configure I2C as slave or master.
- *  @param obj The I2C object
- *  @param data    The buffer for receiving
- *  @param length  Number of bytes to read
+ *  @param obj The I2C objecti2c_get_read_availableread
  *  @return non-zero if a value is available
  */
 int i2c_slave_read(i2c_t *obj, char *data, int length)
 {
-    i2c_read_raw_blocking(obj->dev, (uint8_t *)data, (size_t)length);
+    size_t read_len = i2c_read_raw_blocking(obj->dev, (uint8_t *)data, length);
 
-    return 1;
+    DEBUG_PRINTF("i2c_slave read %d bytes\r\n", read_len);
+
+    return read_len;
 }
 
 /** Configure I2C as slave or master.
@@ -179,10 +205,12 @@ int i2c_slave_read(i2c_t *obj, char *data, int length)
  */
 int i2c_slave_write(i2c_t *obj, const char *data, int length)
 {
+    DEBUG_PRINTF("i2c_slave_write\r\n");
+
     //Check if raw is okay or use write_blocking
     i2c_write_raw_blocking(obj->dev, (const uint8_t *)data, (size_t)length);
 
-    return 1;
+    return length;
 }
 
 /** Configure I2C address.
@@ -194,7 +222,10 @@ int i2c_slave_write(i2c_t *obj, const char *data, int length)
 void i2c_slave_address(i2c_t *obj, int idx, uint32_t address, uint32_t mask)
 {
     if (obj->is_slave) {
-        i2c_set_slave_mode(obj->dev, true, address);
+        DEBUG_PRINTF("i2c_slave_address: %p, %d, %d, %d\r\n", obj, idx, address, mask);
+
+        obj->slave_addr = (uint8_t)(address >> 1);
+        i2c_set_slave_mode(obj->dev, true, obj->slave_addr);
     }
 }
 
