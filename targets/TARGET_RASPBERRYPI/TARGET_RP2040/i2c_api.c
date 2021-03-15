@@ -210,8 +210,11 @@ int i2c_slave_write(i2c_t *obj, const char *data, int length)
 {
     DEBUG_PRINTF("i2c_slave_write\r\n");
 
-    //Check if raw is okay or use write_blocking
     i2c_write_raw_blocking(obj->dev, (const uint8_t *)data, (size_t)length);
+
+    //Clear interrupt
+    int clear_read_req = i2c_get_hw(obj->dev)->clr_rd_req;
+    DEBUG_PRINTF("clear_read_req: %d\n", clear_read_req);
 
     return length;
 }

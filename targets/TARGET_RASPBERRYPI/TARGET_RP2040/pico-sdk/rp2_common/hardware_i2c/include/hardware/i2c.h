@@ -274,8 +274,13 @@ static inline size_t i2c_get_read_available(i2c_inst_t *i2c) {
 static inline void i2c_write_raw_blocking(i2c_inst_t *i2c, const uint8_t *src, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         // TODO NACK or STOP on end?
-        while (!i2c_get_write_available(i2c))
+        size_t write_available = i2c_get_write_available(i2c);
+        printf("bytes available for write: %d\n", write_available);
+        while (!write_available) {
             tight_loop_contents();
+            write_available = i2c_get_write_available(i2c);
+            printf("bytes available for write: %d\n", write_available);
+        }
         i2c_get_hw(i2c)->data_cmd = *src++;
     }
 }
