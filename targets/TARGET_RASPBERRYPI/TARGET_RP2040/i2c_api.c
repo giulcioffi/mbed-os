@@ -168,17 +168,20 @@ void i2c_slave_mode(i2c_t *obj, int enable_slave)
  */
 int i2c_slave_receive(i2c_t *obj)
 {
-    //DEBUG_PRINTF("i2c_slave_receive\r\n");
     int retValue = NoData;
 
-    int command = (obj->dev->hw->data_cmd & 0x00000100) >> 8;
+    int rd_req = (obj->dev->hw->raw_intr_stat & I2C_IC_RAW_INTR_STAT_RD_REQ_BITS) >> 5;
 
-    if (command == I2C_IC_DATA_CMD_CMD_VALUE_WRITE) {
-        retValue = WriteAddressed;
+    if (rd_req == I2C_IC_RAW_INTR_STAT_RD_REQ_VALUE_ACTIVE) {
+        DEBUG_PRINTF("Read addressed\r\n");
+        return ReadAddressed;
     }
 
-    if (command == I2C_IC_DATA_CMD_CMD_VALUE_READ) {
-        retValue = ReadAddressed;
+    int wr_req = (obj->dev->hw->status & I2C_IC_STATUS_RFNE_BITS) >> 3;
+
+    if (wr_req == I2C_IC_STATUS_RFNE_VALUE_NOT_EMPTY) {
+        DEBUG_PRINTF("Write addressed\r\n");
+        return WriteAddressed;
     }
 
     return (retValue);
