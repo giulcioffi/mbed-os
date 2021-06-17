@@ -39,6 +39,7 @@
 #include "us_ticker_api.h"
 #include "mbed_critical.h"
 #include "hardware/timer.h"
+#include "hardware/sync.h"
 
 #define US_TICKER_COUNTER_BITS        32u
 #define US_TICKER_FREQ                1000000
@@ -53,11 +54,48 @@ const ticker_info_t* us_ticker_get_info()
     return &info;
 }
 
-const uint8_t alarm_num = 0;
+static const uint8_t alarm_num = 0;
+
+static timestamp_t last_timestamp = 0;
+
+static void us_ticker_irq_handler_internal(uint alarm_src) {
+    if (alarm_num == alarm_src) {
+        us_ticker_irq_handler();
+    }
+}
+
+static void hardware_alarm_irq_handler_internal()
+{
+    // Determine which timer this IRQ is for
+    uint32_t ipsr;
+    __asm volatile ("mrs %0, ipsr" : "=r" (ipsr)::);
+    uint alarm_id = (ipsr & 0x3fu) - 16;
+    check_hardware_alarm_num_param(alarm_id);
+
+    spin_lock_t *lock = spin_lock_instance(PICO_SPINLOCK_ID_TIMER);
+    uint32_t save = spin_lock_blocking(lock);
+    // Clear the timer IRQ (inside lock, because we check whether we have handled the IRQ yet in alarm_set by looking at the interrupt status
+    timer_hw->intr = 1u << alarm_id;
+
+    spin_unlock(lock, save);
+
+    us_ticker_irq_handler_internal(alarm_num);
+}
+
+static void hardware_alarm_set_callback_internal()
+{
+    spin_lock_t *lock = spin_lock_instance(PICO_SPINLOCK_ID_TIMER);
+    uint32_t save = spin_lock_blocking(lock);
+    irq_set_exclusive_handler(alarm_num, hardware_alarm_irq_handler_internal);
+    irq_set_enabled(alarm_num, true);
+    hw_set_bits(&timer_hw->inte, 1u << alarm_num);
+    spin_unlock(lock, save);
+}
 
 void us_ticker_init(void)
 {
-    hardware_alarm_set_callback(alarm_num, us_ticker_irq_handler);
+    hardware_alarm_claim(alarm_num);
+    hardware_alarm_set_callback_internal();
 }
 
 uint32_t us_ticker_read()
@@ -68,8 +106,19 @@ uint32_t us_ticker_read()
 void us_ticker_set_interrupt(timestamp_t timestamp)
 {
     core_util_critical_section_enter();
-    absolute_time_t target = {timestamp};
-    hardware_alarm_set_target(alarm_num, target);
+    // update the current timestamp
+    if (timestamp <= last_timestamp) {
+        //Time to wrap the 32 bit timer
+        absolute_time_t max_target = { 0xFFFFFFFFFFFFFFFF };
+        //This will allow to always enable the alarm,
+        //otherwise the condition now >= t will prevent to set it
+        hardware_alarm_set_target(alarm_num, max_target);
+        timer_hw->alarm[alarm_num] = timestamp;
+    } else {
+        absolute_time_t target = { timestamp };
+        hardware_alarm_set_target(alarm_num, target);
+    }
+    last_timestamp = timestamp;
     core_util_critical_section_exit();
 }
 
@@ -90,4 +139,5 @@ void us_ticker_clear_interrupt(void)
 
 void us_ticker_free(void)
 {
+    hardware_alarm_unclaim(alarm_num);
 }
