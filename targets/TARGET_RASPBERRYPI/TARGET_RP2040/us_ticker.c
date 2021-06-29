@@ -103,16 +103,35 @@ uint32_t us_ticker_read()
     return time_us_32();
 }
 
+void wrap_alarm(void)
+{
+    uint64_t current_time = time_us_64();
+    uint64_t wrapped_time = current_time - 0xFFFFFFFF;
+    timer_hw->timelw = (uint32_t)wrapped_time;
+    timer_hw->timehw = 0;
+}
+
 void us_ticker_set_interrupt(timestamp_t timestamp)
 {
     core_util_critical_section_enter();
     // update the current timestamp
     if (timestamp <= last_timestamp) {
-        //Time to wrap the 32 bit timer
+        //If we are here, it means that the 32 bit timer already wrapped
+        //Now we need to wrap the 64 bit timer, as it was a 32 bit one.
+
+        //First we set the maximum target to let the SDK always enable the alarm.
+        //Providing the maximum possible target will make the condition (now >= t)
+        //inside hardware_alarm_set_target() function evaluate false and will always allow to set the alarm.
         absolute_time_t max_target = { 0xFFFFFFFFFFFFFFFF };
-        //This will allow to always enable the alarm,
-        //otherwise the condition now >= t will prevent to set it
+
+        if (last_timestamp != 0) {
+            //Wrap the 64 bit alarm to follow the 32 bit one
+            wrap_alarm();
+        }
+
         hardware_alarm_set_target(alarm_num, max_target);
+
+        //Now set the proper target in the alarm register after the 2 timers have been wrapped
         timer_hw->alarm[alarm_num] = timestamp;
     } else {
         absolute_time_t target = { timestamp };
