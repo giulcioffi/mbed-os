@@ -50,7 +50,7 @@ class FileHandle;
 extern const char *OK;
 extern const char *CRLF;
 
-#define BUFF_SIZE 32
+#define BUFF_SIZE 60
 
 /* AT Error types enumeration */
 enum DeviceErrorType {
@@ -357,6 +357,12 @@ public:
      */
     void write_hex_string(const char *str, size_t size);
 
+    /** Get the error detected during read_int()
+     *
+     *  @return the latest negative integer error got from read_int().
+     */
+    int32_t get_last_read_error();
+
     /** Reads as string and converts result to integer. Supports only non-negative integers.
      *
      *  @return the non-negative integer or -1 in case of error.
@@ -641,6 +647,8 @@ private: //Member variables
     int _event_id;
 
     char _cmd_buffer[BUFF_SIZE];
+
+    int32_t _last_read_error;
 };
 
 } // namespace mbed
