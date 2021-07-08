@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include "netsocket/nsapi_types.h"
 
-const int CELLULAR_RETRY_ARRAY_SIZE = 10;
+const int CELLULAR_RETRY_ARRAY_SIZE = 5;
 
 struct cell_callback_data_t {
     nsapi_error_t error; /* possible error code */
