@@ -172,11 +172,19 @@ nsapi_error_t GEMALTO_CINTERION_CellularStack::gethostbyname(const char *host, S
         _at.cmd_start_stop("^SISX" , "=" , "%s%d%s", "HostByName" , _cid, host);
         _at.resp_start("^SISX: \"HostByName\",");
         char ipAddress[NSAPI_IP_SIZE];
-        _at.read_string(ipAddress, sizeof(ipAddress));
-        _at.restore_at_timeout();
-        if (!address->set_ip_address(ipAddress)) {
-            _at.unlock();
-            return NSAPI_ERROR_DNS_FAILURE;
+        int size = _at.read_string(ipAddress, sizeof(ipAddress));
+        if (size) {
+            //Valid string received
+            printf("Valid string\n");
+            _at.restore_at_timeout();
+            if (!address->set_ip_address(ipAddress)) {
+                _at.unlock();
+                return NSAPI_ERROR_DNS_FAILURE;
+            }
+        } else {
+            //Null string received
+            printf("Null string\n");
+            return NSAPI_ERROR_NO_ADDRESS;
         }
     }
 
